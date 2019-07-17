@@ -37,7 +37,8 @@
     {
       "inline": [
         "git clone --branch v0.7.1 https://github.com/hashicorp/terraform-aws-consul.git",
-        "terraform-aws-consul/modules/install-consul/install-consul --version {{ user `consul_version` }}"
+        "terraform-aws-consul/modules/install-consul/install-consul --version {{ user `consul_version` }}",
+	"terraform-aws-consul/modules/install-dnsmasq/install-dnsmasq"
       ],
       "type": "shell"
     }
