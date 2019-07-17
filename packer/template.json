@@ -1,0 +1,38 @@
+{
+  "builders": [
+    {
+      "ami_name": "amzn2-ami-hvm-{{ timestamp }}-x86_64-gp2-vault",
+      "instance_type": "{{ user `instance_type` }}",
+      "source_ami": "{{ user `source_ami` }}",
+      "source_ami_filter": {
+        "filters": {
+          "name": "amzn2-ami-hvm-*-x86_64-gp2",
+          "root-device-type": "ebs",
+          "virtualization-type": "hvm"
+        },
+        "most_recent": true,
+        "owners": [
+          "amazon"
+        ]
+      },
+      "ssh_username": "ec2-user",
+      "type": "amazon-ebs"
+    }
+  ],
+  "provisioners": [
+    {
+      "inline": [
+        "sudo yum -qy update",
+        "sudo yum -qy install git",
+        "git clone --branch v0.13.1 https://github.com/hashicorp/terraform-aws-vault.git",
+        "terraform-aws-vault/modules/install-vault/install-vault --version {{ user `vault_version` }}"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "instance_type": "t3.small",
+    "source_ami": "",
+    "vault_version": "1.1.3"
+  }
+}
