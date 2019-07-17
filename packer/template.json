@@ -23,14 +23,27 @@
     {
       "inline": [
         "sudo yum -qy update",
-        "sudo yum -qy install git",
+        "sudo yum -qy install git"
+      ],
+      "type": "shell"
+    },
+    {
+      "inline": [
         "git clone --branch v0.13.1 https://github.com/hashicorp/terraform-aws-vault.git",
         "terraform-aws-vault/modules/install-vault/install-vault --version {{ user `vault_version` }}"
+      ],
+      "type": "shell"
+    },
+    {
+      "inline": [
+        "git clone --branch v0.7.1 https://github.com/hashicorp/terraform-aws-consul.git",
+        "terraform-aws-consul/modules/install-consul/install-consul --version {{ user `consul_version` }}"
       ],
       "type": "shell"
     }
   ],
   "variables": {
+    "consul_version": "1.5.2",
     "instance_type": "t3.small",
     "source_ami": "",
     "vault_version": "1.1.3"
