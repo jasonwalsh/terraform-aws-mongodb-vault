@@ -1,0 +1,23 @@
+#cloud-config
+
+runcmd:
+  - setcap cap_ipc_lock=+ep /usr/local/bin/vault
+  - systemctl start vault
+
+users:
+  - default
+  - name: vault
+    system: true
+
+write_files:
+  - content: ${systemd}
+    encoding: b64
+    owner: root:root
+    path: /etc/systemd/system/vault.service
+    permissions: '0644'
+
+  - content: ${config}
+    encoding: b64
+    owner: root:root
+    path: /etc/vault.d/vault.hcl
+    permissions: '0644'
