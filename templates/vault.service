@@ -6,6 +6,7 @@ After=network-online.target
 ConditionFileNotEmpty=/etc/vault.d/vault.hcl
 
 [Service]
+EnvironmentFile=-/etc/environment
 User=vault
 Group=vault
 ProtectSystem=full
