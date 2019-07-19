@@ -166,6 +166,10 @@ module "autoscaling" {
     aws_security_group.security_group.id
   ]
 
+  target_group_arns = [
+    element(module.alb.target_group_arns, 0)
+  ]
+
   tags_as_map = var.tags
 
   user_data = templatefile(
@@ -187,6 +191,78 @@ module "autoscaling" {
   )
 
   vpc_zone_identifier = var.key_name != "" ? module.vpc.public_subnets : module.vpc.private_subnets
+}
+
+resource "aws_security_group" "alb" {
+  egress {
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+
+    from_port = 0
+    protocol  = "-1"
+    to_port   = 0
+  }
+  ingress {
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+
+    from_port = 80
+    protocol  = "tcp"
+    to_port   = 80
+  }
+
+  vpc_id = local.vpc_id
+}
+
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "4.1.0"
+
+  http_tcp_listeners = [
+    {
+      port     = 80
+      protocol = "HTTP"
+    }
+  ]
+
+  http_tcp_listeners_count = 1
+  load_balancer_name       = format("%s%s", local.prefix, "vault")
+  logging_enabled          = false
+
+  security_groups = [
+    aws_security_group.alb.id
+  ]
+
+  subnets = module.vpc.public_subnets
+
+  target_groups = [
+    {
+      name             = "vault"
+      backend_protocol = "HTTP"
+      backend_port     = 8200
+    }
+  ]
+
+  target_groups_count = 1
+
+  target_groups_defaults = {
+    cookie_duration                  = 86400
+    deregistration_delay             = 300
+    health_check_healthy_threshold   = 3
+    health_check_interval            = 10
+    health_check_matcher             = "200-299"
+    health_check_path                = "/v1/sys/health"
+    health_check_port                = "traffic-port"
+    health_check_timeout             = 5
+    health_check_unhealthy_threshold = 3
+    slow_start                       = 0
+    stickiness_enabled               = true
+    target_type                      = "instance"
+  }
+
+  vpc_id = local.vpc_id
 }
 
 module "vpc" {
