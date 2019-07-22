@@ -289,3 +289,36 @@ module "vpc" {
 
   tags = var.tags
 }
+
+module "slack" {
+  source  = "terraform-aws-modules/notify-slack/aws"
+  version = "2.0.0"
+
+  create            = var.webhook_url != "" ? true : false
+  kms_key_arn       = aws_kms_key.kms_key.arn
+  slack_channel     = var.channel
+  slack_username    = var.username
+  slack_webhook_url = var.webhook_url
+  sns_topic_name    = format("%s%s", local.prefix, "vault")
+}
+
+resource "aws_cloudwatch_metric_alarm" "autoscaling" {
+  alarm_actions = [
+    module.slack.this_slack_topic_arn
+  ]
+
+  alarm_name          = format("%s%s-%s", local.prefix, "vault", "GroupInServiceInstances")
+  comparison_operator = "LessThanThreshold"
+
+  dimensions = {
+    AutoScalingGroupName = module.autoscaling.this_autoscaling_group_name
+  }
+
+  evaluation_periods = 1
+  metric_name        = "GroupInServiceInstances"
+  namespace          = "AWS/AutoScaling"
+  period             = 60
+  statistic          = "Sum"
+  tags               = var.tags
+  threshold          = var.desired_capacity
+}

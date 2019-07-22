@@ -10,8 +10,14 @@ variable "desired_capacity" {
   type        = number
 }
 
+variable "domain_name" {
+  default     = "vault.corp.mongodb.com"
+  description = "Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate"
+  type        = string
+}
+
 variable "instance_type" {
-  default     = "t3.medium"
+  default     = "m5.2xlarge"
   description = "The instance type of the EC2 instance"
   type        = string
 }
@@ -26,8 +32,35 @@ variable "tags" {
   type    = map(string)
 }
 
+variable "validation_method" {
+  default     = "DNS"
+  description = "The method you want to use if you are requesting a public certificate to validate that you own or control domain"
+  type        = string
+}
+
 variable "vpc_id" {
   default     = ""
   description = "The ID of the VPC"
+  type        = string
+}
+
+###########################################
+# Slack variables for Amazon SNS messages #
+###########################################
+variable "channel" {
+  default     = ""
+  description = "Channel, private group, or IM channel to send message to"
+  type        = string
+}
+
+variable "username" {
+  default     = ""
+  description = "Set your bot's user name"
+  type        = string
+}
+
+variable "webhook_url" {
+  default     = ""
+  description = ""
   type        = string
 }
