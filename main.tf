@@ -2,10 +2,14 @@ terraform {
   required_version = "~> 0.12"
 }
 
+provider "aws" {
+  version = "~> 2.0"
+}
+
 locals {
-  ports = [
-    8200,
-    8201
+  policy_arns = [
+    aws_iam_policy.iam_policy.arn,
+    "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   ]
 
   prefix = "mongodb-"
@@ -24,30 +28,38 @@ data "aws_availability_zones" "availability_zones" {
 
 data "aws_region" "region" {}
 
+data "aws_acm_certificate" "acm_certificate" {
+  domain      = var.domain_name
+  most_recent = true
+  statuses    = ["ISSUED"]
+
+  count = var.domain_name != "" ? 1 : 0
+}
+
 # https://www.vaultproject.io/docs/configuration/storage/dynamodb.html#required-aws-permissions
 data "aws_iam_policy_document" "iam_policy_document" {
   statement {
     actions = [
-      "dynamodb:DescribeLimits",
-      "dynamodb:DescribeTimeToLive",
-      "dynamodb:ListTagsOfResource",
-      "dynamodb:DescribeReservedCapacityOfferings",
-      "dynamodb:DescribeReservedCapacity",
-      "dynamodb:ListTables",
       "dynamodb:BatchGetItem",
       "dynamodb:BatchWriteItem",
       "dynamodb:CreateTable",
       "dynamodb:DeleteItem",
+      "dynamodb:DescribeLimits",
+      "dynamodb:DescribeReservedCapacity",
+      "dynamodb:DescribeReservedCapacityOfferings",
+      "dynamodb:DescribeTable",
+      "dynamodb:DescribeTimeToLive",
       "dynamodb:GetItem",
       "dynamodb:GetRecords",
+      "dynamodb:ListTables",
+      "dynamodb:ListTagsOfResource",
       "dynamodb:PutItem",
       "dynamodb:Query",
-      "dynamodb:UpdateItem",
       "dynamodb:Scan",
-      "dynamodb:DescribeTable",
-      "kms:Encrypt",
+      "dynamodb:UpdateItem",
       "kms:Decrypt",
-      "kms:DescribeKey"
+      "kms:DescribeKey",
+      "kms:Encrypt"
     ]
 
     effect = "Allow"
@@ -74,13 +86,11 @@ resource "aws_security_group_rule" "vault" {
     "0.0.0.0/0"
   ]
 
-  from_port         = element(local.ports, count.index)
+  from_port         = 8200
   protocol          = "tcp"
   security_group_id = aws_security_group.security_group.id
-  to_port           = element(local.ports, count.index)
+  to_port           = 8201
   type              = "ingress"
-
-  count = length(local.ports)
 }
 
 resource "aws_security_group_rule" "ingress" {
@@ -119,8 +129,10 @@ resource "aws_iam_policy" "iam_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "iam_role_policy_attachment" {
-  policy_arn = aws_iam_policy.iam_policy.arn
+  policy_arn = element(local.policy_arns, count.index)
   role       = aws_iam_role.iam_role.name
+
+  count = length(local.policy_arns)
 }
 
 resource "aws_iam_instance_profile" "iam_instance_profile" {
@@ -150,16 +162,19 @@ module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "3.0.0"
 
-  associate_public_ip_address  = var.key_name != "" ? true : false
-  desired_capacity             = var.desired_capacity
-  health_check_type            = "EC2"
-  iam_instance_profile         = aws_iam_instance_profile.iam_instance_profile.name
-  image_id                     = data.aws_ami.ami.id
-  instance_type                = var.instance_type
-  key_name                     = var.key_name
-  max_size                     = var.desired_capacity
-  min_size                     = var.desired_capacity
-  name                         = format("%s%s", local.prefix, "vault")
+  associate_public_ip_address = var.key_name != "" ? true : false
+  desired_capacity            = var.desired_capacity
+  health_check_type           = "EC2"
+  iam_instance_profile        = aws_iam_instance_profile.iam_instance_profile.name
+  image_id                    = data.aws_ami.ami.id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  max_size                    = var.desired_capacity
+  min_size                    = var.desired_capacity
+  name                        = format("%s%s", local.prefix, "vault")
+
+  # If the launch configuration for the auto scaling group changes, then a new auto scaling group is deployed. This
+  # strategy is similar to a canary deployment.
   recreate_asg_when_lc_changes = true
 
   security_groups = [
@@ -175,18 +190,19 @@ module "autoscaling" {
   user_data = templatefile(
     "${path.module}/templates/user-data.txt",
     {
-      # The Vault agent configuration
+      # The Vault agent configuration file
       config = base64encode(
         templatefile(
-          "${path.module}/templates/configuration.tf",
+          "${path.module}/templates/configuration.hcl",
           {
             kms_key_id = aws_kms_key.kms_key.key_id
             region     = data.aws_region.region.name
           }
         )
-      ),
-      # The systemd unit configuration
-      systemd = base64encode(file("${path.module}/templates/vault.service"))
+      )
+
+      # The CloudWatch agent configuration file
+      cloudwatch = base64encode(file("${path.module}/templates/amazon-cloudwatch-agent.json"))
     }
   )
 
@@ -203,6 +219,7 @@ resource "aws_security_group" "alb" {
     protocol  = "-1"
     to_port   = 0
   }
+
   ingress {
     cidr_blocks = [
       "0.0.0.0/0"
@@ -211,6 +228,16 @@ resource "aws_security_group" "alb" {
     from_port = 80
     protocol  = "tcp"
     to_port   = 80
+  }
+
+  ingress {
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+
+    from_port = 443
+    protocol  = "tcp"
+    to_port   = 443
   }
 
   vpc_id = local.vpc_id
@@ -228,8 +255,17 @@ module "alb" {
   ]
 
   http_tcp_listeners_count = 1
-  load_balancer_name       = format("%s%s", local.prefix, "vault")
-  logging_enabled          = false
+
+  https_listeners = [
+    {
+      certificate_arn = join("", data.aws_acm_certificate.acm_certificate.*.arn)
+      port            = 443
+    }
+  ]
+
+  https_listeners_count = 1
+  load_balancer_name    = format("%s%s", local.prefix, "vault")
+  logging_enabled       = false
 
   security_groups = [
     aws_security_group.alb.id
@@ -265,6 +301,26 @@ module "alb" {
   vpc_id = local.vpc_id
 }
 
+resource "aws_lb_listener_rule" "lb_listener_rule" {
+  action {
+    redirect {
+      port        = 443
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+
+    target_group_arn = element(module.alb.target_group_arns, 0)
+    type             = "redirect"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["vault.corp.mongodb.com"]
+  }
+
+  listener_arn = element(module.alb.http_tcp_listener_arns, 0)
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "2.5.0"
@@ -295,7 +351,6 @@ module "slack" {
   version = "2.0.0"
 
   create            = var.webhook_url != "" ? true : false
-  kms_key_arn       = aws_kms_key.kms_key.arn
   slack_channel     = var.channel
   slack_username    = var.username
   slack_webhook_url = var.webhook_url

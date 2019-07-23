@@ -2,23 +2,18 @@
 
 runcmd:
   - echo "VAULT_API_ADDR=https://$(curl --silent curl http://169.254.169.254/latest/meta-data/local-ipv4):8200" >> /etc/environment
-  - setcap cap_ipc_lock=+ep /usr/local/bin/vault
   - systemctl start vault
-
-users:
-  - default
-  - name: vault
-    system: true
+  - /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s
 
 write_files:
-  - content: ${systemd}
-    encoding: b64
-    owner: root:root
-    path: /etc/systemd/system/vault.service
-    permissions: '0644'
-
   - content: ${config}
     encoding: b64
     owner: root:root
     path: /etc/vault.d/vault.hcl
+    permissions: '0644'
+
+  - content: ${cloudwatch}
+    encoding: b64
+    owner: root:root
+    path: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
     permissions: '0644'

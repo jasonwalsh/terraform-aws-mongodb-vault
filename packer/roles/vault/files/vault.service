@@ -25,7 +25,7 @@ KillSignal=SIGINT
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
-StartLimitIntervalSec=60
+StartLimitInterval=60
 StartLimitBurst=3
 LimitNOFILE=65536
 

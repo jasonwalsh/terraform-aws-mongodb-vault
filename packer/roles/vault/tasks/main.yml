@@ -1,0 +1,35 @@
+---
+- name: Create Vault user and group
+  user:
+    create_home: false
+    name: vault
+    state: present
+    system: true
+  become: true
+
+- name: Download and install Vault
+  unarchive:
+    creates: /usr/local/bin/vault
+    dest: /usr/local/bin
+    remote_src: true
+    src: https://releases.hashicorp.com/vault/1.1.3/vault_1.1.3_linux_amd64.zip
+  become: true
+
+- name: Create Vault configuration directory
+  file:
+    path: /etc/vault.d
+    state: directory
+  become: true
+
+- name: Enable the Vault executable the ability to use the mlock syscall
+  capabilities:
+    capability: cap_ipc_lock+ep
+    path: /usr/local/bin/vault
+    state: present
+  become: true
+
+- name: Copy the Vault systemd unit file
+  copy:
+    dest: /etc/systemd/system/vault.service
+    src: vault.service
+  become: true

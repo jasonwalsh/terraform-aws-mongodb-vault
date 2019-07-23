@@ -23,42 +23,19 @@
     {
       "inline": [
         "sudo yum -qy update",
-        "sudo yum -qy install git"
+        "sudo yum -qy install python-pip",
+        "sudo pip install ansible"
       ],
       "type": "shell"
     },
     {
-      "inline": [
-        "wget --quiet https://releases.hashicorp.com/terraform/0.12.4/terraform_0.12.4_linux_amd64.zip",
-        "sudo unzip -d /usr/bin terraform_0.12.4_linux_amd64.zip",
-        "rm terraform_0.12.4_linux_amd64.zip"
-      ],
-      "type": "shell"
-    },
-    {
-      "inline": [
-        "git clone --branch v0.13.1 https://github.com/hashicorp/terraform-aws-vault.git /tmp/terraform-aws-vault",
-        "/tmp/terraform-aws-vault/modules/install-vault/install-vault --version {{ user `vault_version` }}"
-      ],
-      "type": "shell"
-    },
-    {
-      "destination": "/tmp/terraform-aws-vault/modules/private-tls-cert/terraform.tfvars",
-      "source": "terraform.tfvars",
-      "type": "file"
-    },
-    {
-      "inline": [
-        "cd /tmp/terraform-aws-vault/modules/private-tls-cert",
-        "terraform init",
-        "sudo terraform apply -auto-approve",
-        "sudo /tmp/terraform-aws-vault/modules/update-certificate-store/update-certificate-store --cert-file-path /opt/vault/tls/ca.crt.pem"
-      ],
-      "type": "shell"
+      "playbook_dir": "roles",
+      "playbook_file": "playbook.yml",
+      "type": "ansible-local"
     }
   ],
   "variables": {
-    "instance_type": "t3.small",
+    "instance_type": "t1.micro",
     "source_ami": "",
     "vault_version": "1.1.3"
   }

@@ -1,0 +1,32 @@
+---
+- name: Install git
+  yum:
+    name: git
+    state: present
+  become: true
+
+- name: Download and install Terraform
+  unarchive:
+    creates: /usr/bin/terraform
+    dest: /usr/bin
+    remote_src: true
+    src: https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
+  become: true
+
+- name: Clone the private-tls-cert Terraform module
+  git:
+    clone: true
+    dest: /tmp/gencert
+    repo: https://github.com/gruntwork-io/private-tls-cert.git
+
+- name: Copy the terraform.tfvars file
+  copy:
+    dest: /tmp/gencert/modules/generate-cert
+    src: terraform.tfvars
+
+- name: Run private-tls-cert Terraform module
+  terraform:
+    force_init: true
+    project_path: /tmp/gencert/modules/generate-cert
+    state: present
+  become: true

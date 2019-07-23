@@ -10,6 +10,11 @@ variable "desired_capacity" {
   type        = number
 }
 
+variable "domain_name" {
+  description = "Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate"
+  type        = string
+}
+
 variable "instance_type" {
   default     = "m5.2xlarge"
   description = "The instance type of the EC2 instance"
