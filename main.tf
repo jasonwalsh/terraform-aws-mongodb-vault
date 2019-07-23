@@ -377,3 +377,33 @@ resource "aws_cloudwatch_metric_alarm" "autoscaling" {
   tags               = var.tags
   threshold          = var.desired_capacity
 }
+
+resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        height = 6
+        properties = {
+          metrics = [
+            [
+              "AWS/EC2",
+              "CPUUtilization",
+              "AutoScalingGroupName",
+              module.autoscaling.this_autoscaling_group_name
+            ]
+          ]
+          period  = 300
+          region  = data.aws_region.region.name
+          stacked = false
+          view    = "timeSeries"
+        }
+        type  = "metric"
+        width = 6
+        x     = 0
+        y     = 0
+      }
+    ]
+  })
+
+  dashboard_name = format("%s%s", local.prefix, "vault")
+}
