@@ -2,7 +2,6 @@
 
 - [Requirements](#requirements)
 - [Usage](#usage)
-  - [Prerequisites](#prerequisites)
 - [Inputs](#inputs)
 - [Outputs](#outputs)
 - [License](#license)
@@ -19,12 +18,6 @@ This repository contains Terraform configurations for creating and provisioning 
 
 HashiCorp Vault is software for managing secrets and protecting sensitive data. To learn more about Vault, visit the official [documentation](https://www.vaultproject.io/docs/).
 
-### Prerequisites
-
-This repository uses the verified AWS Vault [module](https://registry.terraform.io/modules/hashicorp/vault/aws) from the Terraform module registry. The source module is responsible for creating a Vault cluster and a [Consul](https://www.consul.io/) cluster. The Vault cluster requires Consul because the Vault servers are configured to use Consul as a [storage](https://www.vaultproject.io/docs/configuration/storage/index.html) backend. Consul also provides other useful features such as service discovery, health checks, key/value storage, and much more.
-
-To learn more about the cluster topology, visit the official [documentation](https://github.com/hashicorp/terraform-aws-vault).
-
 **Note:** Before running any Terraform commands, ensure that the following environment variables are assigned:
 
 | Name | Description |
@@ -33,20 +26,34 @@ To learn more about the cluster topology, visit the official [documentation](htt
 | `AWS_SECRET_ACCESS_KEY` | Specifies the secret key associated with the access key |
 | `AWS_DEFAULT_REGION` | Specifies the AWS Region to send the request to |
 
+After configuring the required environment variables, invoke the following commands:
+
     $ terraform init
     $ terraform apply
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
-| key\_name | The name of the key pair | string | `""` | yes |
+| channel | Channel, private group, or IM channel to send message to | string | `""` | no |
+| cidr\_block | The IPv4 network range for the VPC, in CIDR notation | string | `"10.0.0.0/16"` | no |
+| desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"3"` | no |
+| domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | n/a | yes |
+| instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
+| key\_name | The name of the key pair | string | n/a | yes |
+| tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
+| username | Set your bot's user name | string | `""` | no |
+| vpc\_id | The ID of the VPC | string | `""` | no |
+| webhook\_url | The Incoming Webhook URL | string | `""` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| dns\_name | The public DNS name |
+| dns\_name | The DNS name of the load balancer |
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## License
 
