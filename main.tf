@@ -301,6 +301,18 @@ module "alb" {
   vpc_id = local.vpc_id
 }
 
+resource "aws_route53_record" "route53_record" {
+  alias {
+    evaluate_target_health = false
+    name                   = module.alb.dns_name
+    zone_id                = module.alb.load_balancer_zone_id
+  }
+
+  name    = "vault.route53.build.10gen.cc"
+  type    = "A"
+  zone_id = "ZYSJTA7XCIHDB"
+}
+
 resource "aws_lb_listener_rule" "lb_listener_rule" {
   action {
     redirect {
