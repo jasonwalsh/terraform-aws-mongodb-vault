@@ -7,6 +7,12 @@ provider "aws" {
 }
 
 locals {
+  conditions = [
+    var.domain_name,
+    aws_route53_record.route53_record.name,
+    module.alb.dns_name
+  ]
+
   policy_arns = [
     aws_iam_policy.iam_policy.arn,
     "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
@@ -275,7 +281,7 @@ module "alb" {
 
   target_groups = [
     {
-      name             = "vault"
+      name             = format("%s%s", local.prefix, "vault")
       backend_protocol = "HTTPS"
       backend_port     = 8200
     }
@@ -316,6 +322,7 @@ resource "aws_route53_record" "route53_record" {
 resource "aws_lb_listener_rule" "lb_listener_rule" {
   action {
     redirect {
+      host        = var.domain_name
       port        = 443
       protocol    = "HTTPS"
       status_code = "HTTP_301"
@@ -327,10 +334,12 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
 
   condition {
     field  = "host-header"
-    values = ["vault.corp.mongodb.com"]
+    values = [element(local.conditions, count.index)]
   }
 
   listener_arn = element(module.alb.http_tcp_listener_arns, 0)
+
+  count = length(local.conditions)
 }
 
 module "vpc" {
