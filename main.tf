@@ -7,6 +7,28 @@ provider "aws" {
 }
 
 locals {
+  alarms = [
+    {
+      comparison_operator = "GreaterThanOrEqualToThreshold"
+      metric_name         = "cpu_usage_system"
+      statistic           = "Average"
+      threshold           = 75
+    },
+    {
+      comparison_operator = "GreaterThanOrEqualToThreshold"
+      metric_name         = "mem_used_percent"
+      statistic           = "Average"
+      threshold           = 75
+    },
+
+    {
+      comparison_operator = "GreaterThanOrEqualToThreshold"
+      metric_name         = "disk_used_percent"
+      statistic           = "Average"
+      threshold           = 75
+    }
+  ]
+
   conditions = [
     var.domain_name,
     aws_route53_record.route53_record.name,
@@ -412,25 +434,27 @@ module "slack" {
   sns_topic_name    = format("%s%s", local.prefix, "vault")
 }
 
-resource "aws_cloudwatch_metric_alarm" "autoscaling" {
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm" {
   alarm_actions = [
     module.slack.this_slack_topic_arn
   ]
 
-  alarm_name          = format("%s%s-%s", local.prefix, "vault", "GroupInServiceInstances")
-  comparison_operator = "LessThanThreshold"
+  alarm_name          = format("%s%s-%s", local.prefix, "vault", lookup(local.alarms[count.index], "metric_name"))
+  comparison_operator = "GreaterThanOrEqualToThreshold"
 
   dimensions = {
     AutoScalingGroupName = module.autoscaling.this_autoscaling_group_name
   }
 
   evaluation_periods = 1
-  metric_name        = "GroupInServiceInstances"
-  namespace          = "AWS/AutoScaling"
+  metric_name        = lookup(local.alarms[count.index], "metric_name")
+  namespace          = "CWAgent"
   period             = 60
-  statistic          = "Sum"
+  statistic          = lookup(local.alarms[count.index], "statistic", "Average")
   tags               = var.tags
-  threshold          = var.desired_capacity
+  threshold          = lookup(local.alarms[count.index], "threshold", 75)
+
+  count = length(local.alarms)
 }
 
 #########################################
