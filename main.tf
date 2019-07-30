@@ -87,6 +87,10 @@ resource "aws_kms_key" "kms_key" {
 resource "aws_security_group" "security_group" {
   tags   = var.tags
   vpc_id = local.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 ################################################################
@@ -252,6 +256,10 @@ resource "aws_security_group" "alb" {
   }
 
   vpc_id = local.vpc_id
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 module "alb" {
