@@ -5,13 +5,6 @@
       - unzip
     state: present
 
-- name: Create Vault user and group
-  user:
-    create_home: false
-    name: vault
-    state: present
-    system: true
-
 - name: Download and install Vault
   unarchive:
     creates: /usr/local/bin/vault
@@ -19,10 +12,25 @@
     remote_src: true
     src: https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip
 
-- name: Create Vault configuration directory
+- name: Create Vault user and group
+  user:
+    create_home: false
+    home: /etc/vault.d
+    name: vault
+    shell: /bin/false
+    state: present
+    system: true
+
+- name: Create Vault configuration directories
   file:
-    path: /etc/vault.d
+    group: vault
+    owner: vault
+    path: '{{ item }}'
+    recurse: true
     state: directory
+  with_items:
+    - /etc/vault.d
+    - /var/log/vault
 
 - name: Grant Vault executable the ability to use the mlock syscall
   capabilities:
@@ -34,3 +42,8 @@
   copy:
     dest: /etc/systemd/system/vault.service
     src: vault.service
+
+# Vault encrypts data in transit and at rest, however it must still have sensitive data in memory to function. Risk of
+# exposure should be minimized by disabling swap to prevent the operating system from paging sensitive data to disk
+- name: Disable swap
+  command: swapoff -a

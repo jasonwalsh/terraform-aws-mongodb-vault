@@ -8,9 +8,9 @@ runcmd:
 write_files:
   - content: ${config}
     encoding: b64
-    owner: root:root
+    owner: vault:vault
     path: /etc/vault.d/vault.hcl
-    permissions: '0644'
+    permissions: '0640'
 
   - content: ${cloudwatch}
     encoding: b64
