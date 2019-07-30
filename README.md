@@ -43,6 +43,7 @@ After configuring the required environment variables, invoke the following comma
 | domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | n/a | yes |
 | instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
 | key\_name | The name of the key pair | string | `""` | no |
+| provisioned\_throughput | Represents the provisioned throughput settings for a specified table or index | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
 | vpc\_id | The ID of the VPC | string | `""` | no |

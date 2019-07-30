@@ -27,6 +27,15 @@ variable "key_name" {
   type        = string
 }
 
+variable "provisioned_throughput" {
+  default = {
+    read_capacity_units  = 10
+    write_capacity_units = 10
+  }
+  description = "Represents the provisioned throughput settings for a specified table or index"
+  type        = map(number)
+}
+
 variable "tags" {
   default     = {}
   description = "Adds or overwrites the specified tags for the specified resources"

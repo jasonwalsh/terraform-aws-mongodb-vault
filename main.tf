@@ -22,6 +22,9 @@ locals {
   vpc_id = coalesce(var.vpc_id, module.vpc.vpc_id)
 }
 
+###########################################
+# Amazon Machine Image built using Packer #
+###########################################
 data "aws_ami" "ami" {
   most_recent = true
   name_regex  = "^ubuntu-xenial-16.04-amd64-server-\\d+-vault$"
@@ -86,7 +89,9 @@ resource "aws_security_group" "security_group" {
   vpc_id = local.vpc_id
 }
 
-# Vault-specific TCP ports
+################################################################
+# Vault Auto Scaling Group ingress/egress security group rules #
+################################################################
 resource "aws_security_group_rule" "vault" {
   cidr_blocks = [
     "0.0.0.0/0"
@@ -160,8 +165,8 @@ resource "aws_dynamodb_table" "dynamodb_table" {
   hash_key       = "Path"
   name           = "vault-dynamodb-backend"
   range_key      = "Key"
-  read_capacity  = 10
-  write_capacity = 10
+  read_capacity  = lookup(var.provisioned_throughput, "read_capacity_units", 10)
+  write_capacity = lookup(var.provisioned_throughput, "write_capacity_units", 10)
 }
 
 module "autoscaling" {
@@ -421,7 +426,7 @@ resource "aws_cloudwatch_metric_alarm" "autoscaling" {
 }
 
 #########################################
-# Amazon CloudWatch dashboard resources #
+# Amazon CloudWatch Dashboard Resources #
 #########################################
 resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
   dashboard_body = jsonencode({
