@@ -67,6 +67,18 @@
         ],
         "metrics_collection_interval": 60
       },
+      "net": {
+        "measurement": [
+          "bytes_sent",
+          "bytes_recv",
+          "packets_sent",
+          "packets_recv"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "*"
+        ]
+      },
       "swap": {
         "measurement": [
           "swap_used_percent"
