@@ -319,7 +319,7 @@ resource "aws_route53_record" "route53_record" {
   zone_id = "ZYSJTA7XCIHDB"
 }
 
-resource "aws_lb_listener_rule" "lb_listener_rule" {
+resource "aws_lb_listener_rule" "http" {
   action {
     redirect {
       host        = var.domain_name
@@ -340,6 +340,27 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
   listener_arn = element(module.alb.http_tcp_listener_arns, 0)
 
   count = length(local.conditions)
+}
+
+resource "aws_lb_listener_rule" "https" {
+  action {
+    redirect {
+      host        = var.domain_name
+      port        = 443
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+
+    target_group_arn = element(module.alb.target_group_arns, 0)
+    type             = "redirect"
+  }
+
+  condition {
+    field  = "host-header"
+    values = [aws_route53_record.route53_record.name]
+  }
+
+  listener_arn = element(module.alb.https_listener_arns, 0)
 }
 
 module "vpc" {
@@ -421,6 +442,23 @@ resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
         type  = "metric"
         width = 6
         x     = 0
+        y     = 0
+      },
+      {
+        height = 6
+        properties = {
+          metrics = [
+            ["CWAgent", "mem_used_percent", "AutoScalingGroupName", module.autoscaling.this_autoscaling_group_name],
+            [".", "disk_used_percent", ".", "."]
+          ]
+          period  = 300
+          region  = data.aws_region.region.name
+          stacked = false
+          view    = "timeSeries"
+        }
+        type  = "metric"
+        width = 6
+        x     = 6
         y     = 0
       }
     ]

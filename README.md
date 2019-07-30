@@ -8,17 +8,18 @@
 
 ## Requirements
 
-- [Terraform](https://www.terraform.io/)
+- [Packer](https://packer.io/downloads.html)
+- [Terraform](https://www.terraform.io/downloads.html)
 
 ## Usage
 
-This repository contains Terraform configurations for creating and provisioning a [HashiCorp Vault](https://www.vaultproject.io/) cluster.
+This repository contains a Packer [template](https://www.packer.io/docs/templates/index.html) and Terraform [configurations](https://www.terraform.io/docs/configuration/index.html) for creating and provisioning a [HashiCorp Vault](https://www.vaultproject.io/) cluster.
 
 > What is HashiCorp Vault?
 
 HashiCorp Vault is software for managing secrets and protecting sensitive data. To learn more about Vault, visit the official [documentation](https://www.vaultproject.io/docs/).
 
-**Note:** Before running any Terraform commands, ensure that the following environment variables are assigned:
+**Note:** Before running any Packer or Terraform commands, ensure that the following environment variables are assigned:
 
 | Name | Description |
 |------|-------------|
@@ -51,6 +52,7 @@ After configuring the required environment variables, invoke the following comma
 
 | Name | Description |
 |------|-------------|
+| dashboard | URL to launch the CloudWatch dashboard for monitoring |
 | dns\_name | The DNS name of the load balancer |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
