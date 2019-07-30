@@ -420,45 +420,29 @@ resource "aws_cloudwatch_metric_alarm" "autoscaling" {
   threshold          = var.desired_capacity
 }
 
+#########################################
+# Amazon CloudWatch dashboard resources #
+#########################################
 resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
   dashboard_body = jsonencode({
     widgets = [
-      {
-        height = 6
-        properties = {
-          metrics = [
-            [
-              "AWS/EC2",
-              "CPUUtilization",
-              "AutoScalingGroupName",
-              module.autoscaling.this_autoscaling_group_name
-            ]
-          ]
-          period  = 300
-          region  = data.aws_region.region.name
-          stacked = false
-          view    = "timeSeries"
-        }
-        type  = "metric"
-        width = 6
-        x     = 0
-        y     = 0
-      },
+      # Aggregate metrics for CPU, memory, and disk space usage for the Vault Auto Scaling Group
       {
         height = 6
         properties = {
           metrics = [
             ["CWAgent", "mem_used_percent", "AutoScalingGroupName", module.autoscaling.this_autoscaling_group_name],
+            [".", "cpu_usage_system", ".", "."],
             [".", "disk_used_percent", ".", "."]
           ]
           period  = 300
           region  = data.aws_region.region.name
           stacked = false
-          view    = "timeSeries"
+          view    = "singleValue"
         }
         type  = "metric"
         width = 6
-        x     = 6
+        x     = 0
         y     = 0
       }
     ]

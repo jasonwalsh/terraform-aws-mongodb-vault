@@ -37,7 +37,10 @@
           "cpu_usage_system"
         ],
         "metrics_collection_interval": 60,
-        "totalcpu": false
+        "resources": [
+          "*"
+        ],
+        "totalcpu": true
       },
       "disk": {
         "measurement": [
