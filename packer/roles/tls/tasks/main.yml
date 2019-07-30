@@ -1,32 +1,54 @@
 ---
-- name: Install git
-  yum:
-    name: git
+- name: Install required dependencies
+  apt:
+    name:
+      - libssl-dev
+      - python3-pip
     state: present
-  become: true
 
-- name: Download and install Terraform
-  unarchive:
-    creates: /usr/bin/terraform
-    dest: /usr/bin
-    remote_src: true
-    src: https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
-  become: true
+- name: Install pyOpenSSL
+  pip:
+    name:
+      - pyOpenSSL
+    state: latest
 
-- name: Clone the private-tls-cert Terraform module
-  git:
-    clone: true
-    dest: /tmp/gencert
-    repo: https://github.com/gruntwork-io/private-tls-cert.git
+- name: Create private key
+  openssl_privatekey:
+    owner: vault
+    path: /etc/vault.d/vault.key
+    size: 2048
+    state: present
+    type: RSA
+  register: privatekey
 
-- name: Copy the terraform.tfvars file
+- name: Create certificate signing request
+  openssl_csr:
+    common_name: MongoDB
+    owner: vault
+    path: /etc/vault.d/vault.csr
+    privatekey_path: '{{ privatekey.filename }}'
+    subject_alt_name: '{{ tls_subject_alt_name }}'
+  register: csr
+
+- name: Create self-signed certificate
+  openssl_certificate:
+    csr_path: '{{ csr.filename }}'
+    owner: vault
+    path: /etc/vault.d/vault.crt
+    privatekey_path: '{{ privatekey.filename }}'
+    provider: selfsigned
+    state: present
+  register: selfsigned
+
+- name: Copy self-signed certificate to local CA certificates directory
   copy:
-    dest: /tmp/gencert/modules/generate-cert
-    src: terraform.tfvars
+    content: '{{ lookup("file", selfsigned.filename) }}'
+    dest: /usr/local/share/ca-certificates/vault.crt
 
-- name: Run private-tls-cert Terraform module
-  terraform:
-    force_init: true
-    project_path: /tmp/gencert/modules/generate-cert
-    state: present
-  become: true
+- name: Update certificates
+  command: update-ca-certificates
+
+- name: Remove certificate signing request
+  file:
+    path: '{{ csr.filename }}'
+    state: absent

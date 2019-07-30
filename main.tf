@@ -24,7 +24,7 @@ locals {
 
 data "aws_ami" "ami" {
   most_recent = true
-  name_regex  = "^amzn2-ami-hvm-\\d+-x86_64-gp2-vault$"
+  name_regex  = "^ubuntu-xenial-16.04-amd64-server-\\d+-vault$"
   owners      = ["self"]
 }
 

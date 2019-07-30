@@ -1,7 +1,7 @@
 listener "tcp" {
   address       = "0.0.0.0:8200"
-  tls_cert_file = "/etc/pki/tls/certs/vault.csr"
-  tls_key_file  = "/etc/pki/tls/private/vault.pem"
+  tls_cert_file = "/etc/vault.d/vault.crt"
+  tls_key_file  = "/etc/vault.d/vault.key"
 }
 
 seal "awskms" {

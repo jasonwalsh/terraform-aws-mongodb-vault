@@ -1,6 +1,5 @@
 ---
 - name: Download and install Amazon CloudWatch agent
-  yum:
-    name: https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+  apt:
+    deb: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
     state: present
-  become: true

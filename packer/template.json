@@ -1,41 +1,47 @@
 {
   "builders": [
     {
-      "ami_name": "amzn2-ami-hvm-{{ timestamp }}-x86_64-gp2-vault",
+      "ami_name": "ubuntu-xenial-16.04-amd64-server-{{ timestamp }}-vault",
       "instance_type": "{{ user `instance_type` }}",
       "source_ami": "{{ user `source_ami` }}",
       "source_ami_filter": {
         "filters": {
-          "name": "amzn2-ami-hvm-*-x86_64-gp2",
+          "name": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*",
           "root-device-type": "ebs",
           "virtualization-type": "hvm"
         },
         "most_recent": true,
         "owners": [
-          "amazon"
+          "aws-marketplace"
         ]
       },
-      "ssh_username": "ec2-user",
+      "ssh_username": "ubuntu",
       "type": "amazon-ebs"
     }
   ],
   "provisioners": [
     {
       "inline": [
-        "sudo yum -qy update",
-        "sudo yum -qy install python-pip",
-        "sudo pip install ansible"
+        "sudo add-apt-repository -y ppa:ansible/ansible",
+        "sudo apt-get -qq update",
+        "sudo apt-get -qq install ansible"
       ],
       "type": "shell"
     },
     {
+      "extra_arguments": [
+        "--extra-vars",
+        "ansible_python_interpreter=/usr/bin/python3",
+        "--extra-vars",
+        "vault_version={{ user `vault_version` }}"
+      ],
       "playbook_dir": "roles",
       "playbook_file": "playbook.yml",
       "type": "ansible-local"
     }
   ],
   "variables": {
-    "instance_type": "t1.micro",
+    "instance_type": "m3.medium",
     "source_ami": "",
     "vault_version": "1.1.3"
   }

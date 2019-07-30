@@ -41,7 +41,7 @@ After configuring the required environment variables, invoke the following comma
 | desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"3"` | no |
 | domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | n/a | yes |
 | instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
-| key\_name | The name of the key pair | string | n/a | yes |
+| key\_name | The name of the key pair | string | `""` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
 | vpc\_id | The ID of the VPC | string | `""` | no |

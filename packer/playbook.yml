@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- become: true
+  hosts: all
   roles:
     - vault
     - tls
