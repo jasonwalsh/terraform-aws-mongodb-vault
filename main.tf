@@ -7,6 +7,20 @@ provider "aws" {
 }
 
 locals {
+  ############################
+  # Amazon CloudWatch Alarms #
+  ############################
+
+  # Update the elements in this list to configure thresholds for CloudWatch alarms. Metrics are collected via the
+  # CloudWatch agent installed on each EC2 instance in the Auto Scaling Group.
+  #
+  # To view a list of aggregated metrics, refer to the `amazon-cloudwatch-agent.json` configuration file in the
+  # `templates` directory.
+  #
+  # For more information on CloudWatch alarms, refer to the official AWS documentation:
+  #
+  # https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html
+
   alarms = [
     {
       comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -29,6 +43,16 @@ locals {
     }
   ]
 
+  ####################################
+  # ALB HTTP listener redirect rules #
+  ####################################
+
+  # The `conditions` list contains host names to route to the ALB HTTPS listener. The current host names are:
+  #
+  # · vault.corp.mongodb.com
+  # · vault.route53.build.10gen.cc
+  # · The DNS name associated with the ALB
+
   conditions = [
     var.domain_name,
     aws_route53_record.route53_record.name,
@@ -47,6 +71,8 @@ locals {
 ###########################################
 # Amazon Machine Image built using Packer #
 ###########################################
+
+# The image used by Terraform is _always_ the most recent image.
 data "aws_ami" "ami" {
   most_recent = true
   name_regex  = "^ubuntu-xenial-16.04-amd64-server-\\d+-vault$"
