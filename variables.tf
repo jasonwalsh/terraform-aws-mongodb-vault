@@ -11,6 +11,7 @@ variable "desired_capacity" {
 }
 
 variable "domain_name" {
+  default     = "vault.corp.mongodb.com"
   description = "Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate"
   type        = string
 }
