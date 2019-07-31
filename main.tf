@@ -465,7 +465,7 @@ resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
     widgets = [
       # Aggregate metrics for CPU, memory, and disk space usage for the Vault Auto Scaling Group
       {
-        height = 6
+        height = 3
         properties = {
           metrics = [
             ["CWAgent", "mem_used_percent", "AutoScalingGroupName", module.autoscaling.this_autoscaling_group_name],
@@ -478,9 +478,26 @@ resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
           view    = "singleValue"
         }
         type  = "metric"
-        width = 6
+        width = 15
         x     = 0
         y     = 0
+      },
+      {
+        height = 3
+        properties = {
+          metrics = [
+            ["CWAgent", "net_bytes_recv", "AutoScalingGroupName", module.autoscaling.this_autoscaling_group_name],
+            [".", "net_bytes_sent", ".", "."]
+          ]
+          period  = 300
+          region  = data.aws_region.region.name
+          stacked = false
+          view    = "singleValue"
+        }
+        type  = "metric"
+        width = 15
+        x     = 0
+        y     = 3
       }
     ]
   })
