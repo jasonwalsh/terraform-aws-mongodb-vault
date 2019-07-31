@@ -1,3 +1,5 @@
+> A Terraform module for creating a [HashiCorp Vault](https://www.vaultproject.io/) cluster
+
 ## Contents
 
 - [Requirements](#requirements)
