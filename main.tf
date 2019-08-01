@@ -231,6 +231,13 @@ module "autoscaling" {
   # strategy is similar to a canary deployment.
   recreate_asg_when_lc_changes = true
 
+  root_block_device = [
+    {
+      volume_size = 50
+      volume_type = "gp2"
+    }
+  ]
+
   security_groups = [
     aws_security_group.security_group.id
   ]
