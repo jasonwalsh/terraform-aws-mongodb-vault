@@ -47,3 +47,13 @@
 # exposure should be minimized by disabling swap to prevent the operating system from paging sensitive data to disk
 - name: Disable swap
   command: swapoff -a
+
+- name: Copy logrotate configuration file
+  copy:
+    dest: /etc/logrotate.d/vault
+    src: logrotate
+
+- name: Create crontab entry for logrotate
+  cron:
+    job: logrotate -f /etc/logrotate.d/vault
+    special_time: daily
