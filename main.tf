@@ -1,4 +1,9 @@
 terraform {
+  backend "s3" {
+    bucket = "terraform-mongodb-vault"
+    key    = "terraform.tfstate"
+  }
+
   required_version = "~> 0.12"
 }
 
