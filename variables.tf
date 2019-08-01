@@ -16,6 +16,18 @@ variable "domain_name" {
   type        = string
 }
 
+variable "hosted_zone_id" {
+  default     = "ZYSJTA7XCIHDB"
+  description = "The ID of the hosted zone that you want to create the record in"
+  type        = string
+}
+
+variable "hosted_zone_name" {
+  default     = "vault.route53.build.10gen.cc"
+  description = "The name of the domain for the hosted zone where you want to add the resource record set"
+  type        = string
+}
+
 variable "instance_type" {
   default     = "m5.2xlarge"
   description = "The instance type of the EC2 instance"

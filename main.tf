@@ -363,9 +363,9 @@ resource "aws_route53_record" "route53_record" {
     zone_id                = module.alb.load_balancer_zone_id
   }
 
-  name    = "vault.route53.build.10gen.cc"
+  name    = var.hosted_zone_name
   type    = "A"
-  zone_id = "ZYSJTA7XCIHDB"
+  zone_id = var.hosted_zone_id
 }
 
 resource "aws_lb_listener_rule" "http" {

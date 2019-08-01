@@ -87,6 +87,8 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | cidr\_block | The IPv4 network range for the VPC, in CIDR notation | string | `"10.0.0.0/16"` | no |
 | desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"3"` | no |
 | domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | `"vault.corp.mongodb.com"` | no |
+| hosted\_zone\_id | The ID of the hosted zone that you want to create the record in | string | `"ZYSJTA7XCIHDB"` | no |
+| hosted\_zone\_name | The name of the domain for the hosted zone where you want to add the resource record set | string | `"vault.route53.build.10gen.cc"` | no |
 | instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
 | key\_name | The name of the key pair | string | `""` | no |
 | provisioned\_throughput | Represents the provisioned throughput settings for a specified table or index | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
