@@ -145,10 +145,7 @@ resource "aws_security_group" "security_group" {
 # Vault Auto Scaling Group ingress/egress security group rules #
 ################################################################
 resource "aws_security_group_rule" "vault" {
-  cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-
+  cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 8200
   protocol          = "tcp"
   security_group_id = aws_security_group.security_group.id
@@ -157,10 +154,7 @@ resource "aws_security_group_rule" "vault" {
 }
 
 resource "aws_security_group_rule" "ingress" {
-  cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-
+  cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 22
   protocol          = "tcp"
   security_group_id = aws_security_group.security_group.id
@@ -171,10 +165,7 @@ resource "aws_security_group_rule" "ingress" {
 }
 
 resource "aws_security_group_rule" "egress" {
-  cidr_blocks = [
-    "0.0.0.0/0"
-  ]
-
+  cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 0
   protocol          = "-1"
   security_group_id = aws_security_group.security_group.id
@@ -269,38 +260,35 @@ module "autoscaling" {
     }
   )
 
-  vpc_zone_identifier = var.key_name != "" ? module.vpc.public_subnets : module.vpc.private_subnets
+  # If the `vpc_zone_identifier` variable is not provided, then use either the public or private subnets created via the
+  # VPC module. If the EC2 instances in the auto scaling group require SSH access, then use the public subnets,
+  # otherwise, use the private subnets.
+  vpc_zone_identifier = coalescelist(
+    var.vpc_zone_identifier,
+    (var.key_name != "" ? module.vpc.public_subnets : module.vpc.private_subnets)
+  )
 }
 
 resource "aws_security_group" "alb" {
   egress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-
-    from_port = 0
-    protocol  = "-1"
-    to_port   = 0
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
   }
 
   ingress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-
-    from_port = 80
-    protocol  = "tcp"
-    to_port   = 80
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 80
+    protocol    = "tcp"
+    to_port     = 80
   }
 
   ingress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-
-    from_port = 443
-    protocol  = "tcp"
-    to_port   = 443
+    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 443
+    protocol    = "tcp"
+    to_port     = 443
   }
 
   vpc_id = local.vpc_id
@@ -338,7 +326,7 @@ module "alb" {
     aws_security_group.alb.id
   ]
 
-  subnets = module.vpc.public_subnets
+  subnets = coalescelist(var.subnets, module.vpc.public_subnets)
 
   target_groups = [
     {

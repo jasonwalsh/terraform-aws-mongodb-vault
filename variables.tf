@@ -37,6 +37,12 @@ variable "provisioned_throughput" {
   type        = map(number)
 }
 
+variable "subnets" {
+  default     = []
+  description = "The IDs of the subnets in your VPC to attach to the load balancer"
+  type        = list(string)
+}
+
 variable "tags" {
   default     = {}
   description = "Adds or overwrites the specified tags for the specified resources"
@@ -47,6 +53,12 @@ variable "vpc_id" {
   default     = ""
   description = "The ID of the VPC"
   type        = string
+}
+
+variable "vpc_zone_identifier" {
+  default     = []
+  description = "A list of subnet IDs for your virtual private cloud"
+  type        = list(string)
 }
 
 ###########################################

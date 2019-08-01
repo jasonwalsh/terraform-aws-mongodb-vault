@@ -90,9 +90,11 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
 | key\_name | The name of the key pair | string | `""` | no |
 | provisioned\_throughput | Represents the provisioned throughput settings for a specified table or index | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
+| subnets | The IDs of the subnets in your VPC to attach to the load balancer | list(string) | `[]` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
 | vpc\_id | The ID of the VPC | string | `""` | no |
+| vpc\_zone\_identifier | A list of subnet IDs for your virtual private cloud | list(string) | `[]` | no |
 | webhook\_url | The Incoming Webhook URL | string | `""` | no |
 
 ## Outputs
