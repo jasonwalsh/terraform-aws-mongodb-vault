@@ -85,18 +85,21 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 |------|-------------|:----:|:-----:|:-----:|
 | channel | Channel, private group, or IM channel to send message to | string | `""` | no |
 | cidr\_block | The IPv4 network range for the VPC, in CIDR notation | string | `"10.0.0.0/16"` | no |
-| desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"3"` | no |
+| desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"null"` | no |
 | domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | `"vault.corp.mongodb.com"` | no |
 | hosted\_zone\_id | The ID of the hosted zone that you want to create the record in | string | `"ZYSJTA7XCIHDB"` | no |
 | hosted\_zone\_name | The name of the domain for the hosted zone where you want to add the resource record set | string | `"vault.route53.build.10gen.cc"` | no |
-| instance\_type | The instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
-| key\_name | The name of the key pair | string | `""` | no |
-| provisioned\_throughput | Represents the provisioned throughput settings for a specified table or index | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
-| subnets | The IDs of the subnets in your VPC to attach to the load balancer | list(string) | `[]` | no |
+| ingress\_ips | Allow traffic from the specified IPv4 or IPv6 CIDR addresses | list(string) | `[ "0.0.0.0/0" ]` | no |
+| instance\_type | Specifies the instance type of the EC2 instance | string | `"m5.2xlarge"` | no |
+| key\_name | Provides the name of the EC2 key pair | string | `""` | no |
+| max\_size | The maximum number of Amazon EC2 instances in the Auto Scaling group | number | n/a | yes |
+| min\_size | The minimum number of Amazon EC2 instances in the Auto Scaling group | number | n/a | yes |
+| provisioned\_throughput | Throughput for the specified table, which consists of values for ReadCapacityUnits and WriteCapacityUnits | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
+| subnets | The IDs of the subnets for the load balancer | list(string) | `[]` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
 | vpc\_id | The ID of the VPC | string | `""` | no |
-| vpc\_zone\_identifier | A list of subnet IDs for your virtual private cloud | list(string) | `[]` | no |
+| vpc\_zone\_identifier | A list of subnet IDs for a virtual private cloud | list(string) | `[]` | no |
 | webhook\_url | The Incoming Webhook URL | string | `""` | no |
 
 ## Outputs

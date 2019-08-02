@@ -5,7 +5,7 @@ variable "cidr_block" {
 }
 
 variable "desired_capacity" {
-  default     = 3
+  default     = null
   description = "The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain"
   type        = number
 }
@@ -30,14 +30,30 @@ variable "hosted_zone_name" {
 
 variable "instance_type" {
   default     = "m5.2xlarge"
-  description = "The instance type of the EC2 instance"
+  description = "Specifies the instance type of the EC2 instance"
   type        = string
+}
+
+variable "ingress_ips" {
+  default     = ["0.0.0.0/0"]
+  description = "Allow traffic from the specified IPv4 or IPv6 CIDR addresses"
+  type        = list(string)
 }
 
 variable "key_name" {
   default     = ""
-  description = "The name of the key pair"
+  description = "Provides the name of the EC2 key pair"
   type        = string
+}
+
+variable "max_size" {
+  description = "The maximum number of Amazon EC2 instances in the Auto Scaling group"
+  type        = number
+}
+
+variable "min_size" {
+  description = "The minimum number of Amazon EC2 instances in the Auto Scaling group"
+  type        = number
 }
 
 variable "provisioned_throughput" {
@@ -45,13 +61,14 @@ variable "provisioned_throughput" {
     read_capacity_units  = 10
     write_capacity_units = 10
   }
-  description = "Represents the provisioned throughput settings for a specified table or index"
+
+  description = "Throughput for the specified table, which consists of values for ReadCapacityUnits and WriteCapacityUnits"
   type        = map(number)
 }
 
 variable "subnets" {
   default     = []
-  description = "The IDs of the subnets in your VPC to attach to the load balancer"
+  description = "The IDs of the subnets for the load balancer"
   type        = list(string)
 }
 
@@ -69,7 +86,7 @@ variable "vpc_id" {
 
 variable "vpc_zone_identifier" {
   default     = []
-  description = "A list of subnet IDs for your virtual private cloud"
+  description = "A list of subnet IDs for a virtual private cloud"
   type        = list(string)
 }
 

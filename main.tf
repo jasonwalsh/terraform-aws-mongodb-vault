@@ -64,6 +64,8 @@ locals {
     module.alb.dns_name
   ]
 
+  desired_capacity = coalesce(var.desired_capacity, var.min_size)
+
   policy_arns = [
     aws_iam_policy.iam_policy.arn,
     "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
@@ -222,14 +224,14 @@ module "autoscaling" {
   version = "3.0.0"
 
   associate_public_ip_address = var.key_name != "" ? true : false
-  desired_capacity            = var.desired_capacity
+  desired_capacity            = local.desired_capacity
   health_check_type           = "EC2"
   iam_instance_profile        = aws_iam_instance_profile.iam_instance_profile.name
   image_id                    = data.aws_ami.ami.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
-  max_size                    = var.desired_capacity
-  min_size                    = var.desired_capacity
+  max_size                    = var.max_size
+  min_size                    = var.min_size
   name                        = format("%s%s", local.prefix, "vault")
 
   # If the launch configuration for the auto scaling group changes, then a new auto scaling group is deployed. This
@@ -290,14 +292,14 @@ resource "aws_security_group" "alb" {
   }
 
   ingress {
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.ingress_ips
     from_port   = 80
     protocol    = "tcp"
     to_port     = 80
   }
 
   ingress {
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.ingress_ips
     from_port   = 443
     protocol    = "tcp"
     to_port     = 443
