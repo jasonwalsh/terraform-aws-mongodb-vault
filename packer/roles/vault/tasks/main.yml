@@ -57,3 +57,6 @@
   cron:
     job: logrotate -f /etc/logrotate.d/vault
     special_time: daily
+
+- name: Unset shell history
+  command: set +o history
