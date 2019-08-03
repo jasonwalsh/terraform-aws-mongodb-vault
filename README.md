@@ -76,7 +76,10 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | username | Set your bot's user name | string |
 | webhook\_url | The Incoming Webhook URL | string |
 
-    $ terraform apply -var 'channel=vault-alarms' -var 'username=vault-bot' -var 'webhook_url=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
+    $ terraform apply \
+      -var 'channel=vault-alarms' \
+      -var 'username=vault-bot' \
+      -var 'webhook_url=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX'
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
