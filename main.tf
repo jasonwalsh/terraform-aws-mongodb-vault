@@ -211,9 +211,14 @@ resource "aws_dynamodb_table" "dynamodb_table" {
     type = "S"
   }
 
-  billing_mode   = "PROVISIONED"
-  hash_key       = "Path"
-  name           = "vault-dynamodb-backend"
+  billing_mode = "PROVISIONED"
+  hash_key     = "Path"
+  name         = "vault-dynamodb-backend"
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
   range_key      = "Key"
   read_capacity  = lookup(var.provisioned_throughput, "read_capacity_units", 10)
   write_capacity = lookup(var.provisioned_throughput, "write_capacity_units", 10)
