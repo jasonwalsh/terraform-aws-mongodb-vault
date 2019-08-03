@@ -6,7 +6,7 @@ output "dns_name" {
 output "dashboard" {
   description = "URL to launch the CloudWatch dashboard for monitoring"
   value = format(
-    "https://console.aws.amazon.com/cloudwatch/home?region=%s#dashboards:name=%s;autoRefresh=10",
+    "https://console.aws.amazon.com/cloudwatch/home?region=%s#dashboards:name=%s;autoRefresh=10;start=PT5M",
     data.aws_region.region.name,
     aws_cloudwatch_dashboard.cloudwatch_dashboard.dashboard_name
   )
