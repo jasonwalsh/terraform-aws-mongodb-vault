@@ -468,9 +468,10 @@ module "slack" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm" {
-  alarm_actions = [
-    module.slack.this_slack_topic_arn
-  ]
+  alarm_actions = coalescelist(
+    list(module.slack.this_slack_topic_arn),
+    list("")
+  )
 
   alarm_name          = format("%s%s-%s", local.prefix, "vault", lookup(local.alarms[count.index], "metric_name"))
   comparison_operator = "GreaterThanOrEqualToThreshold"
