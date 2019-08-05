@@ -58,5 +58,8 @@
     job: logrotate -f /etc/logrotate.d/vault
     special_time: daily
 
-- name: Unset shell history
-  command: set +o history
+- name: Disable shell history
+  lineinfile:
+    insertafter: EOF
+    line: set +o history
+    path: /etc/profile

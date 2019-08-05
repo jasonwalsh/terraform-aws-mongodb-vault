@@ -22,6 +22,12 @@
   "provisioners": [
     {
       "inline": [
+        "sudo apt-get -qq remove unattended-upgrades"
+      ],
+      "type": "shell"
+    },
+    {
+      "inline": [
         "sudo add-apt-repository -y ppa:ansible/ansible",
         "sudo apt-get -qq update",
         "sudo apt-get -qq install ansible"
