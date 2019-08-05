@@ -1,18 +1,18 @@
 {
   "builders": [
     {
-      "ami_name": "ubuntu-xenial-16.04-amd64-server-{{ timestamp }}-vault",
+      "ami_name": "hashicorp-vault-{{ timestamp }}",
       "instance_type": "{{ user `instance_type` }}",
       "source_ami": "{{ user `source_ami` }}",
       "source_ami_filter": {
         "filters": {
-          "name": "ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*",
+          "name": "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*",
           "root-device-type": "ebs",
           "virtualization-type": "hvm"
         },
         "most_recent": true,
         "owners": [
-          "aws-marketplace"
+          "099720109477"
         ]
       },
       "ssh_username": "ubuntu",
@@ -52,3 +52,4 @@
     "vault_version": "1.2.0"
   }
 }
+

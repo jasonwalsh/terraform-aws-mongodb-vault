@@ -66,6 +66,12 @@ variable "provisioned_throughput" {
   type        = map(number)
 }
 
+variable "retention_in_days" {
+  default     = 7
+  description = "The number of days to retain the log events in the specified log group"
+  type        = number
+}
+
 variable "subnets" {
   default     = []
   description = "The IDs of the subnets for the load balancer"

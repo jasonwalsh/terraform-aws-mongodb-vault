@@ -4,8 +4,6 @@ Documentation=https://www.vaultproject.io/docs/
 Requires=network-online.target
 After=network-online.target
 ConditionFileNotEmpty=/etc/vault.d/vault.hcl
-StartLimitInterval=60
-StartLimitBurst=3
 
 [Service]
 EnvironmentFile=-/etc/environment
@@ -27,6 +25,8 @@ KillSignal=SIGINT
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
+StartLimitIntervalSec=60
+StartLimitBurst=3
 LimitNOFILE=65536
 
 [Install]

@@ -82,7 +82,7 @@ locals {
 # The image used by Terraform is _always_ the most recent image.
 data "aws_ami" "ami" {
   most_recent = true
-  name_regex  = "^ubuntu-xenial-16.04-amd64-server-\\d+-vault$"
+  name_regex  = "^hashicorp-vault-\\d+$"
   owners      = ["self"]
 }
 
@@ -275,7 +275,14 @@ module "autoscaling" {
       )
 
       # The CloudWatch agent configuration file
-      cloudwatch = base64encode(file("${path.module}/templates/amazon-cloudwatch-agent.json"))
+      cloudwatch = base64encode(
+        templatefile(
+          "${path.module}/templates/amazon-cloudwatch-agent.json",
+          {
+            log_group_name = aws_cloudwatch_log_group.cloudwatch_log_group.name
+          }
+        )
+      )
     }
   )
 
@@ -363,10 +370,10 @@ module "alb" {
     health_check_healthy_threshold   = 3
     health_check_interval            = 10
     health_check_matcher             = "200-299"
-    health_check_path                = "/v1/sys/health?standbyok=true&perfstandbyok=true"
+    health_check_path                = "/v1/sys/health"
     health_check_port                = "traffic-port"
     health_check_timeout             = 5
-    health_check_unhealthy_threshold = 3
+    health_check_unhealthy_threshold = local.desired_capacity - 1
     slow_start                       = 0
     stickiness_enabled               = true
     target_type                      = "instance"
@@ -537,4 +544,46 @@ resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
   })
 
   dashboard_name = format("%s%s", local.prefix, "vault")
+}
+
+#######################################
+# Amazon CloudWatch logging resources #
+#######################################
+
+resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
+  name              = format("/aws/autoscaling/%svault", local.prefix)
+  retention_in_days = var.retention_in_days
+  tags              = var.tags
+}
+
+resource "aws_cloudwatch_log_metric_filter" "cloudwatch_log_metric_filter" {
+  log_group_name = aws_cloudwatch_log_group.cloudwatch_log_group.name
+
+  metric_transformation {
+    default_value = 0
+    name          = "sealed"
+    namespace     = "LogMetrics"
+    value         = 1
+  }
+
+  name    = "sealed"
+  pattern = "vault is sealed"
+}
+
+resource "aws_cloudwatch_metric_alarm" "sealed" {
+  alarm_actions = coalescelist(
+    list(module.slack.this_slack_topic_arn),
+    list("")
+  )
+
+  alarm_description   = "Vault is sealed. Vault is configured to automatically unseal."
+  alarm_name          = format("%s%s-%s", local.prefix, "vault", "sealed")
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "sealed"
+  namespace           = "LogMetrics"
+  period              = 30
+  statistic           = "Sum"
+  tags                = var.tags
+  threshold           = 1
 }

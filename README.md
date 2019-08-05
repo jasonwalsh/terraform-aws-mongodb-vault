@@ -98,6 +98,7 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | max\_size | The maximum number of Amazon EC2 instances in the Auto Scaling group | number | n/a | yes |
 | min\_size | The minimum number of Amazon EC2 instances in the Auto Scaling group | number | n/a | yes |
 | provisioned\_throughput | Throughput for the specified table, which consists of values for ReadCapacityUnits and WriteCapacityUnits | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
+| retention\_in\_days | The number of days to retain the log events in the specified log group | number | `"7"` | no |
 | subnets | The IDs of the subnets for the load balancer | list(string) | `[]` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
