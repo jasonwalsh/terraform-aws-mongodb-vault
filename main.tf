@@ -268,6 +268,7 @@ module "autoscaling" {
         templatefile(
           "${path.module}/templates/configuration.hcl",
           {
+            api_addr   = format("https://%s:443", var.domain_name)
             kms_key_id = aws_kms_key.kms_key.key_id
             region     = data.aws_region.region.name
           }

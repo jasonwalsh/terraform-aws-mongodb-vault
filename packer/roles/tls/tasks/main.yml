@@ -15,7 +15,7 @@
 - name: Create private key
   openssl_privatekey:
     owner: vault
-    path: /etc/vault.d/vault.key
+    path: /etc/vault.d/inter-nodes.key
     size: 2048
     state: present
     type: RSA
@@ -23,9 +23,9 @@
 
 - name: Create certificate signing request
   openssl_csr:
-    common_name: MongoDB
+    common_name: '*.ec2.internal'
     owner: vault
-    path: /etc/vault.d/vault.csr
+    path: /etc/vault.d/inter-nodes.csr
     privatekey_path: '{{ privatekey.filename }}'
     subject_alt_name: '{{ tls_subject_alt_name }}'
   register: csr
@@ -34,7 +34,7 @@
   openssl_certificate:
     csr_path: '{{ csr.filename }}'
     owner: vault
-    path: /etc/vault.d/vault.crt
+    path: /etc/vault.d/inter-nodes.crt
     privatekey_path: '{{ privatekey.filename }}'
     provider: selfsigned
     state: present
@@ -43,7 +43,7 @@
 - name: Copy self-signed certificate to local CA certificates directory
   copy:
     content: '{{ lookup("file", selfsigned.filename) }}'
-    dest: /usr/local/share/ca-certificates/vault.crt
+    dest: /usr/local/share/ca-certificates/inter-nodes.crt
 
 - name: Update certificates
   command: update-ca-certificates
