@@ -23,7 +23,7 @@
 
 - name: Create certificate signing request
   openssl_csr:
-    common_name: vault.corp.mongodb.com
+    common_name: MongoDB
     owner: vault
     path: /etc/vault.d/vault.csr
     privatekey_path: '{{ privatekey.filename }}'

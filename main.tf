@@ -268,7 +268,6 @@ module "autoscaling" {
         templatefile(
           "${path.module}/templates/configuration.hcl",
           {
-            api_addr   = format("https://%s:443", var.domain_name)
             kms_key_id = aws_kms_key.kms_key.key_id
             region     = data.aws_region.region.name
           }
@@ -367,7 +366,7 @@ module "alb" {
 
   target_groups_defaults = {
     cookie_duration                  = 86400
-    deregistration_delay             = 60
+    deregistration_delay             = 300
     health_check_healthy_threshold   = 3
     health_check_interval            = 10
     health_check_matcher             = "200-299"
