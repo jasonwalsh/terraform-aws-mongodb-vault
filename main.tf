@@ -48,6 +48,11 @@ locals {
     }
   ]
 
+  alarm_actions = coalescelist(
+    list(module.slack.this_slack_topic_arn),
+    list("")
+  )
+
   ####################################
   # ALB HTTP listener redirect rules #
   ####################################
@@ -213,7 +218,7 @@ resource "aws_dynamodb_table" "dynamodb_table" {
 
   billing_mode = "PROVISIONED"
   hash_key     = "Path"
-  name         = "vault-dynamodb-backend"
+  name         = var.table_name
 
   point_in_time_recovery {
     enabled = true
@@ -230,7 +235,7 @@ module "autoscaling" {
 
   associate_public_ip_address = var.key_name != "" ? true : false
   desired_capacity            = local.desired_capacity
-  health_check_type           = "EC2"
+  health_check_type           = var.health_check_type
   iam_instance_profile        = aws_iam_instance_profile.iam_instance_profile.name
   image_id                    = data.aws_ami.ami.id
   instance_type               = var.instance_type
@@ -271,6 +276,7 @@ module "autoscaling" {
             api_addr   = format("https://%s:443", var.domain_name)
             kms_key_id = aws_kms_key.kms_key.key_id
             region     = data.aws_region.region.name
+            table      = aws_dynamodb_table.dynamodb_table.name
           }
         )
       )
@@ -367,11 +373,11 @@ module "alb" {
 
   target_groups_defaults = {
     cookie_duration                  = 86400
-    deregistration_delay             = 300
+    deregistration_delay             = 10
     health_check_healthy_threshold   = 3
     health_check_interval            = 10
     health_check_matcher             = "200-299"
-    health_check_path                = "/v1/sys/health"
+    health_check_path                = format("/v1/sys/health%s", var.health_check_type == "EC2" ? "" : "?standbyok=true")
     health_check_port                = "traffic-port"
     health_check_timeout             = 5
     health_check_unhealthy_threshold = local.desired_capacity - 1
@@ -476,11 +482,7 @@ module "slack" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm" {
-  alarm_actions = coalescelist(
-    list(module.slack.this_slack_topic_arn),
-    list("")
-  )
-
+  alarm_actions       = local.alarm_actions
   alarm_name          = format("%s%s-%s", local.prefix, "vault", lookup(local.alarms[count.index], "metric_name"))
   comparison_operator = "GreaterThanOrEqualToThreshold"
 
@@ -564,7 +566,7 @@ resource "aws_cloudwatch_log_metric_filter" "cloudwatch_log_metric_filter" {
     default_value = 0
     name          = "sealed"
     namespace     = "LogMetrics"
-    value         = local.desired_capacity
+    value         = 1
   }
 
   name    = "sealed"
@@ -572,12 +574,8 @@ resource "aws_cloudwatch_log_metric_filter" "cloudwatch_log_metric_filter" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "sealed" {
-  alarm_actions = coalescelist(
-    list(module.slack.this_slack_topic_arn),
-    list("")
-  )
-
-  alarm_description   = "All Vault servers are sealed. A vault operator is required to unseal the Vault servers."
+  alarm_actions       = local.alarm_actions
+  alarm_description   = "A Vault server has entered a sealed state. Please contact a Vault operator to administer an unseal of the Vault server."
   alarm_name          = format("%s%s-%s", local.prefix, "vault", "sealed")
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
@@ -587,4 +585,44 @@ resource "aws_cloudwatch_metric_alarm" "sealed" {
   statistic           = "Sum"
   tags                = var.tags
   threshold           = local.desired_capacity
+}
+
+#####################################
+# Amazon CloudWatch DynamoDB alarms #
+#####################################
+
+resource "aws_cloudwatch_metric_alarm" "consumed_read_capacity_units" {
+  alarm_actions       = local.alarm_actions
+  alarm_name          = "ConsumedReadCapacityUnits"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+
+  dimensions = {
+    TableName = aws_dynamodb_table.dynamodb_table.name
+  }
+
+  evaluation_periods = 1
+  metric_name        = "ConsumedReadCapacityUnits"
+  namespace          = "AWS/DynamoDB"
+  period             = 60
+  statistic          = "Sum"
+  tags               = var.tags
+  threshold          = var.provisioned_throughput["read_capacity_units"]
+}
+
+resource "aws_cloudwatch_metric_alarm" "consumed_write_capacity_units" {
+  alarm_actions       = local.alarm_actions
+  alarm_name          = "ConsumedWriteCapacityUnits"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+
+  dimensions = {
+    TableName = aws_dynamodb_table.dynamodb_table.name
+  }
+
+  evaluation_periods = 1
+  metric_name        = "ConsumedWriteCapacityUnits"
+  namespace          = "AWS/DynamoDB"
+  period             = 60
+  statistic          = "Sum"
+  tags               = var.tags
+  threshold          = var.provisioned_throughput["write_capacity_units"]
 }

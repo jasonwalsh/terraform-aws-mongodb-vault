@@ -16,6 +16,12 @@ variable "domain_name" {
   type        = string
 }
 
+variable "health_check_type" {
+  default     = "EC2"
+  description = "The service to use for the health checks"
+  type        = string
+}
+
 variable "hosted_zone_id" {
   default     = "ZYSJTA7XCIHDB"
   description = "The ID of the hosted zone that you want to create the record in"
@@ -76,6 +82,12 @@ variable "subnets" {
   default     = []
   description = "The IDs of the subnets for the load balancer"
   type        = list(string)
+}
+
+variable "table_name" {
+  default     = "vault-dynamodb-backend"
+  description = "The name of the table to create"
+  type        = string
 }
 
 variable "tags" {

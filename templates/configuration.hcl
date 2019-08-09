@@ -14,6 +14,7 @@ seal "awskms" {
 storage "dynamodb" {
   ha_enabled = "true"
   region     = "${region}"
+  table      = "${table}"
 }
 
 ui = true

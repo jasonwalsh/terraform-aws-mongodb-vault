@@ -90,6 +90,7 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | cidr\_block | The IPv4 network range for the VPC, in CIDR notation | string | `"10.0.0.0/16"` | no |
 | desired\_capacity | The number of Amazon EC2 instances that the Auto Scaling group attempts to maintain | number | `"null"` | no |
 | domain\_name | Fully qualified domain name (FQDN), such as www.example.com, that you want to secure with an ACM certificate | string | `"vault.corp.mongodb.com"` | no |
+| health\_check\_type | The service to use for the health checks | string | `"EC2"` | no |
 | hosted\_zone\_id | The ID of the hosted zone that you want to create the record in | string | `"ZYSJTA7XCIHDB"` | no |
 | hosted\_zone\_name | The name of the domain for the hosted zone where you want to add the resource record set | string | `"vault.route53.build.10gen.cc"` | no |
 | ingress\_ips | Allow traffic from the specified IPv4 or IPv6 CIDR addresses | list(string) | `[ "0.0.0.0/0" ]` | no |
@@ -100,6 +101,7 @@ To enable alerting, create an [incoming webhook](https://api.slack.com/incoming-
 | provisioned\_throughput | Throughput for the specified table, which consists of values for ReadCapacityUnits and WriteCapacityUnits | map(number) | `{ "read_capacity_units": 10, "write_capacity_units": 10 }` | no |
 | retention\_in\_days | The number of days to retain the log events in the specified log group | number | `"7"` | no |
 | subnets | The IDs of the subnets for the load balancer | list(string) | `[]` | no |
+| table\_name | The name of the table to create | string | `"vault-dynamodb-backend"` | no |
 | tags | Adds or overwrites the specified tags for the specified resources | map(string) | `{}` | no |
 | username | Set your bot's user name | string | `""` | no |
 | vpc\_id | The ID of the VPC | string | `""` | no |
