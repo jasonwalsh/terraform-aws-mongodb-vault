@@ -564,11 +564,11 @@ resource "aws_cloudwatch_log_metric_filter" "cloudwatch_log_metric_filter" {
     default_value = 0
     name          = "sealed"
     namespace     = "LogMetrics"
-    value         = 1
+    value         = local.desired_capacity
   }
 
   name    = "sealed"
-  pattern = "vault is sealed"
+  pattern = "\"core: vault is sealed\""
 }
 
 resource "aws_cloudwatch_metric_alarm" "sealed" {
@@ -577,14 +577,14 @@ resource "aws_cloudwatch_metric_alarm" "sealed" {
     list("")
   )
 
-  alarm_description   = "Vault is sealed. Vault is configured to automatically unseal."
+  alarm_description   = "All Vault servers are sealed. A vault operator is required to unseal the Vault servers."
   alarm_name          = format("%s%s-%s", local.prefix, "vault", "sealed")
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "sealed"
   namespace           = "LogMetrics"
-  period              = 30
+  period              = 60
   statistic           = "Sum"
   tags                = var.tags
-  threshold           = 1
+  threshold           = local.desired_capacity
 }
