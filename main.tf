@@ -237,6 +237,7 @@ module "autoscaling" {
   associate_public_ip_address = var.key_name != "" ? true : false
   desired_capacity            = local.desired_capacity
   health_check_type           = var.health_check_type
+  health_check_grace_period   = var.health_check_grace_period
   iam_instance_profile        = aws_iam_instance_profile.iam_instance_profile.name
   image_id                    = data.aws_ami.ami.id
   instance_type               = var.instance_type

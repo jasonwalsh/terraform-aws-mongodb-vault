@@ -16,6 +16,12 @@ variable "domain_name" {
   type        = string
 }
 
+variable "health_check_grace_period" {
+  default     = 300
+  description = "The amount of time, in seconds, that Amazon EC2 Auto Scaling waits before checking the health status of an EC2 instance that has come into service"
+  type        = number
+}
+
 variable "health_check_type" {
   default     = "EC2"
   description = "The service to use for the health checks"
