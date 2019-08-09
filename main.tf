@@ -156,6 +156,7 @@ resource "aws_security_group" "security_group" {
 ################################################################
 # Vault Auto Scaling Group ingress/egress security group rules #
 ################################################################
+
 resource "aws_security_group_rule" "vault" {
   cidr_blocks       = ["0.0.0.0/0"]
   from_port         = 8200
@@ -481,9 +482,13 @@ module "slack" {
   sns_topic_name    = format("%s%s", local.prefix, "vault")
 }
 
+#############################################################
+# Amazon Auto Scaling Group EC2 instances CloudWatch alarms #
+#############################################################
+
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm" {
   alarm_actions       = local.alarm_actions
-  alarm_name          = format("%s%s-%s", local.prefix, "vault", lookup(local.alarms[count.index], "metric_name"))
+  alarm_name          = replace(format("%s%s-%s", local.prefix, "vault", lookup(local.alarms[count.index], "metric_name")), "_", "-")
   comparison_operator = "GreaterThanOrEqualToThreshold"
 
   dimensions = {
@@ -504,6 +509,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_metric_alarm" {
 #########################################
 # Amazon CloudWatch Dashboard Resources #
 #########################################
+
 resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
   dashboard_body = jsonencode({
     widgets = [
@@ -542,6 +548,23 @@ resource "aws_cloudwatch_dashboard" "cloudwatch_dashboard" {
         width = 15
         x     = 0
         y     = 3
+      },
+      {
+        height = 3
+        properties = {
+          metrics = [
+            ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", "TableName", aws_dynamodb_table.dynamodb_table.name],
+            [".", "ConsumedReadCapacityUnits", ".", "."]
+          ]
+          period  = 300
+          region  = data.aws_region.region.name
+          stacked = false
+          view    = "singleValue"
+        }
+        type  = "metric"
+        width = 15
+        x     = 0
+        y     = 6
       }
     ]
   })
