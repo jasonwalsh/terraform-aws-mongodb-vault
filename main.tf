@@ -616,7 +616,7 @@ resource "aws_cloudwatch_metric_alarm" "sealed" {
 
 resource "aws_cloudwatch_metric_alarm" "consumed_read_capacity_units" {
   alarm_actions       = local.alarm_actions
-  alarm_name          = "ConsumedReadCapacityUnits"
+  alarm_name          = format("%s%s-%s", local.prefix, "vault", "consumed-read-capacity-units")
   comparison_operator = "GreaterThanOrEqualToThreshold"
 
   dimensions = {
@@ -634,7 +634,7 @@ resource "aws_cloudwatch_metric_alarm" "consumed_read_capacity_units" {
 
 resource "aws_cloudwatch_metric_alarm" "consumed_write_capacity_units" {
   alarm_actions       = local.alarm_actions
-  alarm_name          = "ConsumedWriteCapacityUnits"
+  alarm_name          = format("%s%s-%s", local.prefix, "vault", "consumed-write-capacity-units")
   comparison_operator = "GreaterThanOrEqualToThreshold"
 
   dimensions = {
